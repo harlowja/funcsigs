@@ -1,6 +1,7 @@
 import unittest2 as unittest
 
 import doctest
+import pickle
 import sys
 
 import funcsigs as inspect
@@ -68,6 +69,24 @@ class TestFunctionSignatures(unittest.TestCase):
 	# (and the syntax isn't valid on all pythons so that seems a little
 	# hard to get right.
         doctest.testfile('../README.rst')
+
+    def test_pickling(self):
+        class Test(object):
+            def method(self):
+                pass
+            def method_with_args(self, a):
+                pass
+            def method_with_varargs(*args):
+                pass
+
+        def test(a, b=None, *args, **kwargs):
+            pass
+
+        for m in [Test.method, Test.method_with_args,
+                  Test.method_with_varargs, test]:
+            p = inspect.signature(m)
+            p2 = pickle.loads(pickle.dumps(p))
+            self.assertEqual(p, p2)
 
     def test_unbound_method(self):
         self_kind = "positional_or_keyword"
